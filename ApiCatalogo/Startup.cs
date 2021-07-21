@@ -1,4 +1,5 @@
 using ApiCatalogo.Context;
+using ApiCatalogo.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ namespace ApiCatalogo
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiCatalogo v1"));
             }
-
+            app.ConfigureExceptionHandler();
             app.UseHttpsRedirection();
 
             app.UseRouting();
