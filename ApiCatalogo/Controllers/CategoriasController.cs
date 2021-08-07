@@ -1,5 +1,7 @@
-﻿using ApiCatalogo.Models;
+﻿using ApiCatalogo.DTOs;
+using ApiCatalogo.Models;
 using ApiCatalogo.Repository;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,20 +14,22 @@ namespace ApiCatalogo.Controllers
     [Route("api/[Controller]")]
     public class CategoriasController : Controller
     {
-
         private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
 
-        public CategoriasController(IUnitOfWork uow)
+        public CategoriasController(IUnitOfWork uow, IMapper mapper)
         {
             _uow = uow;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
         {
             try
             {
-                return _uow.CategoriaRepository.Get().ToList();
+                var categorias = _uow.CategoriaRepository.Get().ToList();
+                return _mapper.Map<List<CategoriaDTO>>(categorias);
             }
             catch (Exception)
             {
@@ -34,11 +38,12 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
+        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProdutos()
         {
             try
             {
-                return _uow.CategoriaRepository.GetCategoriasProdutos().ToList();
+                var categorias = _uow.CategoriaRepository.GetCategoriasProdutos().ToList();
+                return _mapper.Map<List<CategoriaDTO>>(categorias);
             }
             catch (Exception)
             {
@@ -47,14 +52,14 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet("{id}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> GetById(int id)
+        public ActionResult<CategoriaDTO> GetById(int id)
         {
             try
             {
                 var categoria = _uow.CategoriaRepository.GetById(p => p.CategoriaId == id);
                 if (categoria == null)
                     return NotFound("Categoria não encontrada");
-                return categoria;
+                return _mapper.Map<CategoriaDTO>(categoria);
             }
             catch (Exception)
             {
@@ -63,13 +68,15 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpPost]
-        public ActionResult Incluir([FromBody] Categoria categoria)
+        public ActionResult Incluir([FromBody] CategoriaDTO categoriaDto)
         {
             try
             {
+                var categoria = _mapper.Map<Categoria>(categoriaDto);
                 _uow.CategoriaRepository.Add(categoria);
                 _uow.Commit();
-                return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
+                var categoriaOutput = _mapper.Map<CategoriaDTO>(categoria);
+                return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoriaOutput);
             }
             catch (Exception)
             {
@@ -78,10 +85,11 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult Alterar(int id, [FromBody] Categoria categoria)
+        public ActionResult Alterar(int id, [FromBody] CategoriaDTO categoriaDto)
         {
             try
             {
+                var categoria = _mapper.Map<Categoria>(categoriaDto);
                 if (id != categoria.CategoriaId)
                     return BadRequest("Não foi possível atualizar a categoria");
                 _uow.CategoriaRepository.Update(categoria);
@@ -96,7 +104,7 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult<Categoria> Delete(int id)
+        public ActionResult<CategoriaDTO> Delete(int id)
         {
             try
             {
@@ -105,7 +113,7 @@ namespace ApiCatalogo.Controllers
                     return NotFound("Categoria não encontrada");
                 _uow.CategoriaRepository.Delete(categoria);
                 _uow.Commit();
-                return categoria;
+                return _mapper.Map<CategoriaDTO>(categoria);
             }
             catch (Exception)
             {
