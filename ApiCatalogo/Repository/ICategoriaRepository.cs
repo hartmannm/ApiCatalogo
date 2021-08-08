@@ -1,13 +1,14 @@
 ﻿using ApiCatalogo.Models;
 using ApiCatalogo.Pagination;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ApiCatalogo.Repository
 {
     public interface ICategoriaRepository : IRepository<Categoria>
     {
-        IEnumerable<Categoria> GetCategoriasProdutos();
+        Task<IEnumerable<Categoria>> GetCategoriasProdutos();
 
-        PagedList<Categoria> GetCategoriasPaginadas(CategoriasParameters categoriasParameters);
+        Task<PagedList<Categoria>> GetCategoriasPaginadas(CategoriasParameters categoriasParameters);
     }
 }

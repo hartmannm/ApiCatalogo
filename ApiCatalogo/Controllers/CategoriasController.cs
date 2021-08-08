@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace ApiCatalogo.Controllers
 {
@@ -26,11 +26,11 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery]CategoriasParameters categoriasParameters)
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get([FromQuery] CategoriasParameters categoriasParameters)
         {
             try
             {
-                var categorias = _uow.CategoriaRepository.GetCategoriasPaginadas(categoriasParameters);
+                var categorias = await _uow.CategoriaRepository.GetCategoriasPaginadas(categoriasParameters);
                 var metadata = new
                 {
                     categorias.TotalCount,
@@ -50,11 +50,11 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet("produtos")]
-        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProdutos()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategoriasProdutos()
         {
             try
             {
-                var categorias = _uow.CategoriaRepository.GetCategoriasProdutos().ToList();
+                var categorias = await _uow.CategoriaRepository.GetCategoriasProdutos();
                 return _mapper.Map<List<CategoriaDTO>>(categorias);
             }
             catch (Exception)
@@ -64,11 +64,11 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpGet("{id}", Name = "ObterCategoria")]
-        public ActionResult<CategoriaDTO> GetById(int id)
+        public async Task<ActionResult<CategoriaDTO>> GetById(int id)
         {
             try
             {
-                var categoria = _uow.CategoriaRepository.GetById(p => p.CategoriaId == id);
+                var categoria = await _uow.CategoriaRepository.GetById(p => p.CategoriaId == id);
                 if (categoria == null)
                     return NotFound("Categoria não encontrada");
                 return _mapper.Map<CategoriaDTO>(categoria);
@@ -80,13 +80,13 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpPost]
-        public ActionResult Incluir([FromBody] CategoriaDTO categoriaDto)
+        public async Task<ActionResult> Incluir([FromBody] CategoriaDTO categoriaDto)
         {
             try
             {
                 var categoria = _mapper.Map<Categoria>(categoriaDto);
                 _uow.CategoriaRepository.Add(categoria);
-                _uow.Commit();
+                await _uow.Commit();
                 var categoriaOutput = _mapper.Map<CategoriaDTO>(categoria);
                 return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoriaOutput);
             }
@@ -97,7 +97,7 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult Alterar(int id, [FromBody] CategoriaDTO categoriaDto)
+        public async Task<ActionResult> Alterar(int id, [FromBody] CategoriaDTO categoriaDto)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace ApiCatalogo.Controllers
                 if (id != categoria.CategoriaId)
                     return BadRequest("Não foi possível atualizar a categoria");
                 _uow.CategoriaRepository.Update(categoria);
-                _uow.Commit();
+                await _uow.Commit();
                 return Ok();
             }
             catch (Exception)
@@ -116,15 +116,15 @@ namespace ApiCatalogo.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult<CategoriaDTO> Delete(int id)
+        public async Task<ActionResult<CategoriaDTO>> Delete(int id)
         {
             try
             {
-                var categoria = _uow.CategoriaRepository.GetById(p => p.CategoriaId == id);
+                var categoria = await _uow.CategoriaRepository.GetById(p => p.CategoriaId == id);
                 if (categoria == null)
                     return NotFound("Categoria não encontrada");
                 _uow.CategoriaRepository.Delete(categoria);
-                _uow.Commit();
+                await _uow.Commit();
                 return _mapper.Map<CategoriaDTO>(categoria);
             }
             catch (Exception)
