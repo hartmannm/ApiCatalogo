@@ -30,7 +30,7 @@ namespace ApiCatalogo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
+                .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = null);
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "ApiCatalogo", Version = "v1" }); });
             var databaseConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options => options.UseMySql(
